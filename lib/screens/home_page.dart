@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool isAuthenticated;
+  final Map<String, dynamic>? userData;
+  final VoidCallback onLogout;
+
+  const HomePage({
+    super.key,
+    required this.isAuthenticated,
+    this.userData,
+    required this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -10,9 +19,17 @@ class HomePage extends StatelessWidget {
         title: Center(child: Text('ESCOM')),
         actions: [
           IconButton(
-            icon: Icon(Icons.account_circle),
+            icon: Icon(isAuthenticated ? Icons.logout : Icons.account_circle),
             onPressed: () {
-              Navigator.pushNamed(context, '/login');
+              if (isAuthenticated) {
+                Navigator.pushNamed(
+                  context,
+                  '/account',
+                  arguments: userData,
+                );
+              } else {
+                Navigator.pushNamed(context, '/login');
+              }
             },
           ),
         ],
@@ -22,7 +39,12 @@ class HomePage extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(color: Colors.blue),
-              child: Text('Menú', style: TextStyle(color: Colors.white, fontSize: 24)),
+              child: Text(
+                isAuthenticated
+                    ? 'Hola, ${userData?['nombre_es'] ?? 'Usuario'}'
+                    : 'Menú',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
             ListTile(
               leading: Icon(Icons.contacts),
@@ -38,63 +60,102 @@ class HomePage extends StatelessWidget {
                 Navigator.pushNamed(context, '/map');
               },
             ),
+            if (isAuthenticated) ...[
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text('Profesores'),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/professors',
+                    arguments: userData, // Pasar datos del usuario a la página de Profesores
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Cerrar Sesión'),
+                onTap: () {
+                  onLogout();
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/', (route) => false); // Vuelve al Home sin sesión
+                },
+              ),
+            ],
           ],
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 300, // Altura ajustada para que la imagen sea más pequeña
-            width: double.infinity, // Anchura completa de la pantalla
-            child: Image.asset(
-              'assets/imgs/escom_navidad.jpeg',
-              fit: BoxFit.contain, // Asegura que la imagen no se recorte
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Escuela Superior de Cómputo (ESCOM)',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'La Escuela Superior de Cómputo es reconocida por su excelencia académica y su formación en las áreas de computación e informática.',
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/career', arguments: 'ISC');
-                      },
-                      child: Text('ISC'),
+                    SizedBox(
+                      height: 300,
+                      width: double.infinity,
+                      child: Image.asset(
+                        'assets/imgs/escom_navidad.jpeg',
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/career', arguments: 'IA');
-                      },
-                      child: Text('IA'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/career', arguments: 'LCD');
-                      },
-                      child: Text('LCD'),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Escuela Superior de Cómputo (ESCOM)',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'La Escuela Superior de Cómputo es reconocida por su excelencia académica y su formación en las áreas de computación e informática.',
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/career', arguments: 'ISC');
+                                },
+                                child: Text('ISC'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/career', arguments: 'IA');
+                                },
+                                child: Text('IA'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/career', arguments: 'LCD');
+                                },
+                                child: Text('LCD'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
