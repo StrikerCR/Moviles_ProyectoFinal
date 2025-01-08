@@ -13,7 +13,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController correoController = TextEditingController();
   String errorMessage = '';
-  bool isPasswordVisible = false; // Estado para controlar la visibilidad de la contraseña
+  bool isPasswordVisible = false;
 
   Future<void> register() async {
     final boleta = boletaController.text.trim();
@@ -35,12 +35,40 @@ class _RegisterPageState extends State<RegisterPage> {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      Navigator.pop(context); // Regresa a la página de inicio de sesión
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         errorMessage = 'Error de registro: $e';
       });
     }
+  }
+
+  InputDecoration customInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 93, 139)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: const Color.fromARGB(255, 0, 93, 139),
+          width: 2.0,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: const Color.fromARGB(255, 0, 93, 139),
+          width: 2.0,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: const Color.fromARGB(255, 0, 93, 139),
+          width: 2.0,
+        ),
+      ),
+    );
   }
 
   @override
@@ -50,6 +78,13 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registro de Usuario'),
+        backgroundColor: const Color.fromARGB(255, 0, 93, 139),
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -69,39 +104,29 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextField(
                         controller: boletaController,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Número de Boleta',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: customInputDecoration('Número de Boleta'),
                       ),
                       SizedBox(height: 16),
                       TextField(
                         controller: nombreController,
-                        decoration: InputDecoration(
-                          labelText: 'Nombre Completo',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: customInputDecoration('Nombre Completo'),
                       ),
                       SizedBox(height: 16),
                       TextField(
                         controller: correoController,
-                        decoration: InputDecoration(
-                          labelText: 'Correo Electrónico',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: customInputDecoration('Correo Electrónico'),
                       ),
                       SizedBox(height: 16),
                       TextField(
                         controller: passwordController,
                         obscureText: !isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          border: OutlineInputBorder(),
+                        decoration: customInputDecoration('Contraseña').copyWith(
                           suffixIcon: IconButton(
                             icon: Icon(
                               isPasswordVisible
                                   ? Icons.visibility
                                   : Icons.visibility_off,
+                              color: const Color.fromARGB(255, 0, 93, 139),
                             ),
                             onPressed: () {
                               setState(() {
@@ -114,7 +139,20 @@ class _RegisterPageState extends State<RegisterPage> {
                       SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: register,
-                        child: Text('Registrarse'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 0, 93, 139),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fixedSize: Size(
+                            MediaQuery.of(context).size.width * 0.4,
+                            50,
+                          ),
+                        ),
+                        child: Text(
+                          'Registrarse',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
                       ),
                       SizedBox(height: 16),
                       Text(

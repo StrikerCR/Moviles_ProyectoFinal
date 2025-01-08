@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
 import 'package:proyecto_final_fbdp_crr/baseDatos/database_connection.dart';
 
 class AccountPage extends StatefulWidget {
@@ -57,95 +59,187 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+  InputDecoration customInputDecoration(ThemeData theme, String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: theme.primaryColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: theme.primaryColor,
+          width: 2.0,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: theme.primaryColor,
+          width: 2.0,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: theme.primaryColor,
+          width: 2.0,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cuenta'),
+        backgroundColor: themeProvider.currentTheme.primaryColor,
+        title: Text(
+          'Cuenta',
+          style: TextStyle(color: Colors.white),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: nombreController,
-              decoration: InputDecoration(
-                labelText: 'Nombre',
-                border: OutlineInputBorder(),
-              ),
-              enabled: isEditing,
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: correoController,
-              decoration: InputDecoration(
-                labelText: 'Correo',
-                border: OutlineInputBorder(),
-              ),
-              enabled: isEditing,
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: passwordController,
-              obscureText: !isPasswordVisible, // Controla si el texto es visible
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isPasswordVisible = !isPasswordVisible;
-                    });
-                  },
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: nombreController,
+                      decoration: customInputDecoration(
+                        themeProvider.currentTheme,
+                        'Nombre',
+                      ),
+                      enabled: isEditing,
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: correoController,
+                      decoration: customInputDecoration(
+                        themeProvider.currentTheme,
+                        'Correo',
+                      ),
+                      enabled: isEditing,
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: !isPasswordVisible,
+                      decoration: customInputDecoration(
+                        themeProvider.currentTheme,
+                        'Contraseña',
+                      ).copyWith(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: themeProvider.currentTheme.primaryColor,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isPasswordVisible = !isPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      enabled: isEditing,
+                    ),
+                    SizedBox(height: 24),
+                    if (isEditing) ...[
+                      ElevatedButton(
+                        onPressed: updateUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              themeProvider.currentTheme.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fixedSize: Size(
+                            MediaQuery.of(context).size.width * 0.8,
+                            50,
+                          ),
+                        ),
+                        child: Text(
+                          'Guardar Cambios',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isEditing = false;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fixedSize: Size(
+                            MediaQuery.of(context).size.width * 0.8,
+                            50,
+                          ),
+                        ),
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ] else ...[
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isEditing = true;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              themeProvider.currentTheme.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fixedSize: Size(
+                            MediaQuery.of(context).size.width * 0.4,
+                            50,
+                          ),
+                        ),
+                        child: Text(
+                          'Editar Datos',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              enabled: isEditing,
             ),
-            SizedBox(height: 24),
-            if (isEditing) ...[
-              ElevatedButton(
-                onPressed: updateUser,
-                child: Text('Guardar Cambios'),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isEditing = false;
-                  });
-                },
-                child: Text('Cancelar'),
-              ),
-            ] else ...[
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isEditing = true;
-                  });
-                },
-                child: Text('Editar Datos'),
-              ),
-            ],
-            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 widget.onLogout();
                 Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/',
-                  (route) => false,
-                ); // Redirige al HomePage sin sesión
+                    context, '/', (route) => false);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Fondo rojo
-                foregroundColor: Colors.white, // Texto blanco
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                fixedSize: Size(
+                  MediaQuery.of(context).size.width * 0.4,
+                  50,
+                ),
               ),
-              child: Text('Cerrar Sesión'),
+              child: Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
