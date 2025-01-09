@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:proyecto_final_fbdp_crr/firebase_options.dart';
 import 'package:proyecto_final_fbdp_crr/screens/account_page.dart';
 import 'package:proyecto_final_fbdp_crr/screens/careeer_page.dart';
 import 'package:proyecto_final_fbdp_crr/screens/directory_page.dart';
@@ -13,7 +17,9 @@ import 'package:proyecto_final_fbdp_crr/screens/direc_details_page.dart';
 import 'package:proyecto_final_fbdp_crr/screens/settings_page.dart';
 import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
@@ -28,22 +34,58 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isAuthenticated = false; // Estado de autenticación
-  Map<String, dynamic>? userData; // Datos del usuario
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  Map<String, dynamic>? userData;
 
-  void logout() {
-    setState(() {
-      isAuthenticated = false;
-      userData = null;
-    });
-    // Restablecer el tema al cerrar sesión
-    Provider.of<ThemeProvider>(context, listen: false).changeTheme('Azul');
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
   }
 
-  void loginSuccess(Map<String, dynamic> user) {
+  Future<void> _loadUserData() async {
+    if (currentUser != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('alumnos')
+            .doc(currentUser!.uid)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            userData = doc.data();
+          });
+        }
+      } catch (e) {
+        debugPrint('Error al cargar datos del usuario: $e');
+      }
+    }
+  }
+
+  void logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
     setState(() {
-      isAuthenticated = true;
-      userData = user;
+      currentUser = null;
+      userData = null;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Provider.of<ThemeProvider>(context, listen: false).changeTheme('Azul');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => LoginPage(
+              onLoginSuccess: (user) async {
+                setState(() {
+                  currentUser = FirebaseAuth.instance.currentUser;
+                });
+                await _loadUserData();
+                Navigator.pushReplacementNamed(context, '/');
+              },
+            ),
+          ),
+        );
+      }
     });
   }
 
@@ -54,27 +96,39 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'ESCOMBROSpy',
-      theme: themeProvider.currentTheme, // Conecta el tema dinámico
-      initialRoute: isAuthenticated ? '/' : '/login',
+      theme: themeProvider.currentTheme,
+      initialRoute: currentUser != null ? '/' : '/login',
       routes: {
         '/': (context) => HomePage(
-              isAuthenticated: isAuthenticated,
+              isAuthenticated: currentUser != null,
               userData: userData,
-              onLogout: logout,
-            ),
-        '/login': (context) => LoginPage(
-              onLoginSuccess: loginSuccess,
+              onLogout: () => logout(context),
             ),
         '/register': (context) => RegisterPage(),
+        '/login': (context) => LoginPage(
+              onLoginSuccess: (user) async {
+                setState(() {
+                  currentUser = FirebaseAuth.instance.currentUser;
+                });
+                await _loadUserData();
+                Navigator.pushReplacementNamed(context, '/');
+              },
+            ),
         '/account': (context) {
           if (userData == null) {
             return LoginPage(
-              onLoginSuccess: loginSuccess,
+              onLoginSuccess: (user) async {
+                setState(() {
+                  currentUser = FirebaseAuth.instance.currentUser;
+                });
+                await _loadUserData();
+                Navigator.pushReplacementNamed(context, '/');
+              },
             );
           } else {
             return AccountPage(
               userData: userData!,
-              onLogout: logout,
+              onLogout: () => logout(context),
             );
           }
         },
