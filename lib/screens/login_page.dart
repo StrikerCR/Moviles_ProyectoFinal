@@ -1,39 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_final_fbdp_crr/baseDatos/database_connection.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(Map<String, dynamic>) onLoginSuccess;
+  final bool showBackButton; // Nueva propiedad para controlar si se muestra la flecha
 
-  LoginPage({required this.onLoginSuccess});
+  LoginPage({required this.onLoginSuccess, this.showBackButton = true}); // Por defecto, la flecha está habilitada
 
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController boletaController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
   bool isPasswordVisible = false;
 
   Future<void> login() async {
-    final boleta = boletaController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     try {
-      final db = await DBConnection().database;
+      // Login con Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-      final result = await db.rawQuery(
-        'SELECT * FROM alumno WHERE noBoleta = ? AND contraseña = ?',
-        [boleta, password],
-      );
+      // Obtener información adicional del usuario desde la colección `alumnos`
+      final userId = userCredential.user!.uid;
+      final userDoc = await FirebaseFirestore.instance
+          .collection('alumnos')
+          .doc(userId)
+          .get();
 
-      if (result.isNotEmpty) {
-        widget.onLoginSuccess(result[0]);
+      if (userDoc.exists) {
+        widget.onLoginSuccess(userDoc.data()!);
         Navigator.pushReplacementNamed(context, '/');
       } else {
         setState(() {
-          errorMessage = 'Número de Boleta o Contraseña incorrectos.';
+          errorMessage = 'No se encontró información del usuario.';
         });
       }
     } catch (e) {
@@ -85,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
           'Iniciar Sesión',
           style: TextStyle(color: Colors.white),
         ),
+        automaticallyImplyLeading: widget.showBackButton, // Controla si se muestra la flecha
       ),
       body: Container(
         color: Colors.white,
@@ -104,9 +111,9 @@ class _LoginPageState extends State<LoginPage> {
                           : MainAxisAlignment.center,
                       children: [
                         TextField(
-                          controller: boletaController,
-                          keyboardType: TextInputType.number,
-                          decoration: customInputDecoration('Número de Boleta'),
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: customInputDecoration('Correo Electrónico'),
                         ),
                         SizedBox(height: 16),
                         TextField(

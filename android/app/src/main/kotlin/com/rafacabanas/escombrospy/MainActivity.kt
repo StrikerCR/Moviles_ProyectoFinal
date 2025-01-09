@@ -1,4 +1,4 @@
-package com.example.proyecto_final_fbdp_crr
+package com.rafacabanas.escombrospy
 
 import io.flutter.embedding.android.FlutterActivity
 

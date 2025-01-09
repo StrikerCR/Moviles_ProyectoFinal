@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final bool isAuthenticated;
   final Map<String, dynamic>? userData;
   final VoidCallback onLogout;
@@ -15,14 +17,49 @@ class HomePage extends StatelessWidget {
   });
 
   @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    if (currentUser != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('alumnos')
+            .doc(currentUser!.uid)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            userData = doc.data();
+          });
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar datos: $e')),
+        );
+      }
+    }
+  }
+
+  void handleLogout() async {
+    await FirebaseAuth.instance.signOut();
+    widget.onLogout();
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-
-    void handleLogout() {
-      themeProvider.changeTheme('Azul'); // Restablece el tema a Azul
-      onLogout();
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-    }
 
     return Scaffold(
       body: Stack(
@@ -69,11 +106,13 @@ class HomePage extends StatelessWidget {
                       ),
                       IconButton(
                         icon: Icon(
-                          isAuthenticated ? Icons.logout : Icons.account_circle,
+                          currentUser != null
+                              ? Icons.logout
+                              : Icons.account_circle,
                           color: Colors.white,
                         ),
                         onPressed: () {
-                          if (isAuthenticated) {
+                          if (currentUser != null) {
                             Navigator.pushNamed(
                               context,
                               '/account',
@@ -116,8 +155,7 @@ class HomePage extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal:
-                                    24.0),
+                                horizontal: 24.0),
                             child: Text(
                               'Escuela Superior de Cómputo (ESCOM) \n',
                               style: TextStyle(
@@ -131,8 +169,7 @@ class HomePage extends StatelessWidget {
                           SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal:
-                                    24.0),
+                                horizontal: 24.0),
                             child: Text(
                               'La Escuela Superior de Cómputo es reconocida por su excelencia académica y su formación en las áreas de computación e informática. \n \n Fue fundada el 13 de agosto de 1993 y ofrece las carreras de ISC, IIA y LCD.',
                               style: TextStyle(
@@ -144,7 +181,6 @@ class HomePage extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       // Botones de carreras
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -156,9 +192,8 @@ class HomePage extends StatelessWidget {
                             },
                             style: OutlinedButton.styleFrom(
                               fixedSize: Size(
-                                MediaQuery.of(context).size.width *
-                                    0.25, // Ajusta el ancho
-                                50, // Altura de los botones
+                                MediaQuery.of(context).size.width * 0.25,
+                                50,
                               ),
                               side: BorderSide(color: Colors.white),
                               backgroundColor:
@@ -179,9 +214,8 @@ class HomePage extends StatelessWidget {
                             },
                             style: OutlinedButton.styleFrom(
                               fixedSize: Size(
-                                MediaQuery.of(context).size.width *
-                                    0.25, // Ajusta el ancho
-                                50, // Altura de los botones
+                                MediaQuery.of(context).size.width * 0.25,
+                                50,
                               ),
                               side: BorderSide(color: Colors.white),
                               backgroundColor:
@@ -202,9 +236,8 @@ class HomePage extends StatelessWidget {
                             },
                             style: OutlinedButton.styleFrom(
                               fixedSize: Size(
-                                MediaQuery.of(context).size.width *
-                                    0.25, // Ajusta el ancho
-                                50, // Altura de los botones
+                                MediaQuery.of(context).size.width * 0.25,
+                                50,
                               ),
                               side: BorderSide(color: Colors.white),
                               backgroundColor:
@@ -238,7 +271,7 @@ class HomePage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  isAuthenticated
+                  currentUser != null
                       ? 'Hola, ${userData?['nombre_es'] ?? 'Usuario'}'
                       : 'Menú',
                   style: TextStyle(color: Colors.white, fontSize: 24),
@@ -270,7 +303,7 @@ class HomePage extends StatelessWidget {
                         Navigator.pushNamed(context, '/map');
                       },
                     ),
-                    if (isAuthenticated) ...[
+                    if (currentUser != null) ...[
                       ListTile(
                         leading: Icon(Icons.person,
                             color: themeProvider.currentTheme.primaryColor),

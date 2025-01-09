@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18133417028",
+    "project_id": "escombrospy",
+    "storage_bucket": "escombrospy.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18133417028:android:2effb4129e6d6a37b55011",
+        "android_client_info": {
+          "package_name": "com.rafacabanas.escombrospy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-ZXlTWdQk_OB4MsdtQEtXPhUXTnSRrHg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
