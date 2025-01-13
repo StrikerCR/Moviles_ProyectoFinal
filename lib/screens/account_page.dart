@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
 
 class AccountPage extends StatefulWidget {
-  final Map<String, dynamic> userData; // User's authenticated data
-  final VoidCallback onLogout; // Callback for logout
+  final Map<String, dynamic> userData; // Datos iniciales del usuario
+  final VoidCallback onLogout; // Callback para cerrar sesión
 
   AccountPage({required this.userData, required this.onLogout});
 
@@ -26,10 +26,37 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
+    _initializeUserData();
+    _listenForRealTimeUpdates();
+  }
+
+  void _initializeUserData() {
     nombreController.text = widget.userData['nombre_es'] ?? '';
     apePaternoController.text = widget.userData['apePater_es'] ?? '';
     apeMaternoController.text = widget.userData['apeMater_es'] ?? '';
     passwordController.text = widget.userData['contraseña'] ?? '';
+  }
+
+  void _listenForRealTimeUpdates() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection('alumnos')
+          .doc(user.uid)
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists) {
+          final data = doc.data()!;
+          setState(() {
+            nombreController.text = data['nombre_es'] ?? '';
+            apePaternoController.text = data['apePater_es'] ?? '';
+            apeMaternoController.text = data['apeMater_es'] ?? '';
+            passwordController.text = data['contraseña'] ?? '';
+          });
+        }
+      });
+    }
   }
 
   Future<void> updateUser() async {
@@ -50,17 +77,23 @@ class _AccountPageState extends State<AccountPage> {
         'contraseña': passwordController.text.trim(),
       });
 
-      setState(() {
-        isEditing = false;
-      });
+      if (mounted) {
+        // Verifica si el widget sigue montado
+        setState(() {
+          isEditing = false;
+        });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Datos actualizados exitosamente')),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Datos actualizados exitosamente')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar datos: $e')),
-      );
+      if (mounted) {
+        // Verifica si el widget sigue montado
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar datos: $e')),
+        );
+      }
     }
   }
 
