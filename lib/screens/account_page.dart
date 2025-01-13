@@ -16,7 +16,8 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   final TextEditingController nombreController = TextEditingController();
-  final TextEditingController correoController = TextEditingController();
+  final TextEditingController apePaternoController = TextEditingController();
+  final TextEditingController apeMaternoController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool isEditing = false;
@@ -25,28 +26,27 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
-    nombreController.text = widget.userData['nombre_es'];
-    correoController.text = widget.userData['correo'];
-    passwordController.text = widget.userData['contraseña'];
+    nombreController.text = widget.userData['nombre_es'] ?? '';
+    apePaternoController.text = widget.userData['apePater_es'] ?? '';
+    apeMaternoController.text = widget.userData['apeMater_es'] ?? '';
+    passwordController.text = widget.userData['contraseña'] ?? '';
   }
 
   Future<void> updateUser() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
 
-      // Update Firebase Auth email and password
-      if (user != null) {
-        await user.updateEmail(correoController.text.trim());
-        await user.updatePassword(passwordController.text.trim());
+      if (user == null) {
+        throw Exception("No se pudo obtener el usuario actual.");
       }
 
-      // Update Firestore data
-      await FirebaseFirestore.instance
-          .collection('alumnos')
-          .doc(widget.userData['boleta'])
-          .update({
+      final uid = user.uid; // Obtener el UID del usuario autenticado
+
+      // Actualizar los datos en Firestore
+      await FirebaseFirestore.instance.collection('alumnos').doc(uid).update({
         'nombre_es': nombreController.text.trim(),
-        'correo': correoController.text.trim(),
+        'apePater_es': apePaternoController.text.trim(),
+        'apeMater_es': apeMaternoController.text.trim(),
         'contraseña': passwordController.text.trim(),
       });
 
@@ -105,145 +105,153 @@ class _AccountPageState extends State<AccountPage> {
         ),
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextField(
-                      controller: nombreController,
-                      decoration: customInputDecoration(
-                        themeProvider.currentTheme,
-                        'Nombre',
-                      ),
-                      enabled: isEditing,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: nombreController,
+                    decoration: customInputDecoration(
+                      themeProvider.currentTheme,
+                      'Nombre',
                     ),
-                    SizedBox(height: 16),
-                    TextField(
-                      controller: correoController,
-                      decoration: customInputDecoration(
-                        themeProvider.currentTheme,
-                        'Correo',
-                      ),
-                      enabled: isEditing,
+                    enabled: isEditing,
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: apePaternoController,
+                    decoration: customInputDecoration(
+                      themeProvider.currentTheme,
+                      'Apellido Paterno',
                     ),
-                    SizedBox(height: 16),
-                    TextField(
-                      controller: passwordController,
-                      obscureText: !isPasswordVisible,
-                      decoration: customInputDecoration(
-                        themeProvider.currentTheme,
-                        'Contraseña',
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: themeProvider.currentTheme.primaryColor,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              isPasswordVisible = !isPasswordVisible;
-                            });
-                          },
-                        ),
-                      ),
-                      enabled: isEditing,
+                    enabled: isEditing,
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: apeMaternoController,
+                    decoration: customInputDecoration(
+                      themeProvider.currentTheme,
+                      'Apellido Materno',
                     ),
-                    SizedBox(height: 24),
-                    if (isEditing) ...[
-                      ElevatedButton(
-                        onPressed: updateUser,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              themeProvider.currentTheme.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          fixedSize: Size(
-                            MediaQuery.of(context).size.width * 0.8,
-                            50,
-                          ),
+                    enabled: isEditing,
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: !isPasswordVisible,
+                    decoration: customInputDecoration(
+                      themeProvider.currentTheme,
+                      'Contraseña',
+                    ).copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: themeProvider.currentTheme.primaryColor,
                         ),
-                        child: Text(
-                          'Guardar Cambios',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            isEditing = false;
+                            isPasswordVisible = !isPasswordVisible;
                           });
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          fixedSize: Size(
-                            MediaQuery.of(context).size.width * 0.8,
-                            50,
-                          ),
+                      ),
+                    ),
+                    enabled: isEditing,
+                  ),
+                  SizedBox(height: 24),
+                  if (isEditing) ...[
+                    ElevatedButton(
+                      onPressed: updateUser,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            themeProvider.currentTheme.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                          'Cancelar',
-                          style: TextStyle(color: Colors.white),
+                        fixedSize: Size(
+                          MediaQuery.of(context).size.width * 0.8,
+                          50,
                         ),
                       ),
-                    ] else ...[
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isEditing = true;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              themeProvider.currentTheme.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          fixedSize: Size(
-                            MediaQuery.of(context).size.width * 0.4,
-                            50,
-                          ),
+                      child: Text(
+                        'Guardar Cambios',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          isEditing = false;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                          'Editar Datos',
-                          style: TextStyle(color: Colors.white),
+                        fixedSize: Size(
+                          MediaQuery.of(context).size.width * 0.8,
+                          50,
                         ),
                       ),
-                    ],
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ] else ...[
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          isEditing = true;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            themeProvider.currentTheme.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        fixedSize: Size(
+                          MediaQuery.of(context).size.width * 0.4,
+                          50,
+                        ),
+                      ),
+                      child: Text(
+                        'Editar Datos',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ],
-                ),
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: widget.onLogout,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      fixedSize: Size(
+                        MediaQuery.of(context).size.width * 0.4,
+                        50,
+                      ),
+                    ),
+                    child: Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
             ),
-            ElevatedButton(
-              onPressed: widget.onLogout,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                fixedSize: Size(
-                  MediaQuery.of(context).size.width * 0.4,
-                  50,
-                ),
-              ),
-              child: Text(
-                'Cerrar Sesión',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

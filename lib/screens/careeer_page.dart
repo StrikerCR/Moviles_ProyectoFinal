@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
-import 'package:http/http.dart' as http;
 
 class CareerPage extends StatelessWidget {
   const CareerPage({super.key});
@@ -21,47 +22,42 @@ class CareerPage extends StatelessWidget {
     }
   }
 
-  /// Descargar el archivo PDF desde la URL
-  Future<void> downloadPdf(BuildContext context, String fileName, String fileUrl) async {
+  /// Descargar el archivo PDF directamente desde Firebase Storage
+  Future<void> downloadFileFromFirebase(BuildContext context, String storagePath, String localFileName) async {
     try {
-      // Verificar y solicitar permisos
+      // Solicitar permisos de almacenamiento
       if (await requestStoragePermission()) {
-        // Crear o verificar la carpeta Documents
+        // Obtener el directorio de almacenamiento del dispositivo
         final directory = Directory('/storage/emulated/0/Documents');
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        final filePath = '${directory.path}/$fileName';
-        final file = File(filePath);
-
-        // Verificar si el archivo ya existe y eliminarlo
-        if (await file.exists()) {
-          await file.delete();
+        if (directory == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Archivo existente eliminado: $filePath'),
+            const SnackBar(
+              content: Text('No se pudo acceder al directorio de almacenamiento.'),
             ),
           );
+          return;
         }
 
-        // Descargar el archivo desde el enlace proporcionado
-        final response = await http.get(Uri.parse(fileUrl));
-        if (response.statusCode == 200) {
-          await file.writeAsBytes(response.bodyBytes);
+        // Construir la ruta completa del archivo local
+        final String localPath = '${directory.path}/$localFileName';
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Archivo descargado en: $filePath'),
-            ),
-          );
-        } else {
-          throw Exception('Error al descargar el archivo desde $fileUrl');
-        }
+        // Crear una referencia al archivo en Firebase Storage
+        final Reference firebaseStorageRef = FirebaseStorage.instance.ref(storagePath);
+
+        // Descargar el archivo y guardarlo localmente
+        final File file = File(localPath);
+        await firebaseStorageRef.writeToFile(file);
+
+        // Mostrar éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Archivo descargado en: $localPath'),
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Permiso de almacenamiento denegado.'),
+            content: Text('Permisos de almacenamiento denegados.'),
           ),
         );
       }
@@ -84,9 +80,9 @@ class CareerPage extends StatelessWidget {
         backgroundColor: themeProvider.currentTheme.primaryColor,
         title: Text(
           career,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance
@@ -112,7 +108,7 @@ class CareerPage extends StatelessWidget {
 
           final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
           final description = data['description'] ?? 'Descripción no disponible.';
-          final mapLink = data['mapLink'] ?? '';
+          final mapLink = data['mapLink'] ?? ''; // Ruta en Firebase Storage
           final objetivo = data['objetivo'] ?? 'Objetivo no disponible.';
           final perfilIngreso = data['perfilIngreso'] ?? 'Perfil de ingreso no disponible.';
           final perfilEgreso = data['perfilEgreso'] ?? 'Perfil de egreso no disponible.';
@@ -186,7 +182,7 @@ class CareerPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (mapLink.isNotEmpty) {
-                        await downloadPdf(context, 'MapaCurricular$career.pdf', mapLink);
+                        await downloadFileFromFirebase(context, mapLink, 'MapaCurricular${career}2020.pdf');
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

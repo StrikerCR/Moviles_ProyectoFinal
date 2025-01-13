@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 
-// Mapa de temas
+// Mapa de temas con colores secundarios más claros
 final Map<String, ThemeData> themes = {
   'Azul': ThemeData(
-    primaryColor: Color.fromARGB(255, 0, 93, 139),
+    primaryColor: const Color.fromARGB(255, 0, 93, 139),
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       color: Color.fromARGB(255, 0, 93, 139),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromARGB(255, 0, 93, 139),
+        backgroundColor: const Color.fromARGB(255, 0, 93, 139),
       ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Color.fromARGB(255, 0, 93, 139)),
       ),
       border: OutlineInputBorder(),
     ),
+    colorScheme: ColorScheme.fromSwatch().copyWith(
+      secondary: const Color.fromARGB(255, 173, 216, 230), // Azul claro
+    ),
   ),
   'Morado': ThemeData(
     primaryColor: Colors.deepPurple,
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       color: Colors.deepPurple,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -31,35 +34,41 @@ final Map<String, ThemeData> themes = {
         backgroundColor: Colors.deepPurple,
       ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Colors.deepPurple),
       ),
       border: OutlineInputBorder(),
     ),
+    colorScheme: ColorScheme.fromSwatch().copyWith(
+      secondary: const Color.fromARGB(255, 216, 191, 216), // Lila claro
+    ),
   ),
   'Guinda': ThemeData(
-    primaryColor: Color.fromARGB(255, 128, 0, 64),
+    primaryColor: const Color.fromARGB(255, 128, 0, 64),
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       color: Color.fromARGB(255, 128, 0, 64),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromARGB(255, 128, 0, 64),
+        backgroundColor: const Color.fromARGB(255, 128, 0, 64),
       ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Color.fromARGB(255, 128, 0, 64)),
       ),
       border: OutlineInputBorder(),
     ),
+    colorScheme: ColorScheme.fromSwatch().copyWith(
+      secondary: const Color.fromARGB(255, 255, 182, 193), // Rosa claro
+    ),
   ),
   'Naranja': ThemeData(
     primaryColor: Colors.orange,
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       color: Colors.orange,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -67,11 +76,14 @@ final Map<String, ThemeData> themes = {
         backgroundColor: Colors.orange,
       ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Colors.orange),
       ),
       border: OutlineInputBorder(),
+    ),
+    colorScheme: ColorScheme.fromSwatch().copyWith(
+      secondary: const Color.fromARGB(255, 255, 228, 181), // Melón claro
     ),
   ),
 };

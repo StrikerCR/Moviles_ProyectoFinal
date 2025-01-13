@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   final Function(Map<String, dynamic>) onLoginSuccess;
-  final bool showBackButton; // Nueva propiedad para controlar si se muestra la flecha
+  final bool showBackButton;
 
-  LoginPage({required this.onLoginSuccess, this.showBackButton = true}); // Por defecto, la flecha está habilitada
+  LoginPage({required this.onLoginSuccess, this.showBackButton = true});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -22,12 +22,17 @@ class _LoginPageState extends State<LoginPage> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      setState(() {
+        errorMessage = 'El correo ingresado no tiene un formato válido.';
+      });
+      return;
+    }
+
     try {
-      // Login con Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      // Obtener información adicional del usuario desde la colección `alumnos`
       final userId = userCredential.user!.uid;
       final userDoc = await FirebaseFirestore.instance
           .collection('alumnos')
@@ -39,12 +44,16 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacementNamed(context, '/');
       } else {
         setState(() {
-          errorMessage = 'No se encontró información del usuario.';
+          errorMessage = 'Usuario o contraseña incorrectos.';
         });
       }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        errorMessage = 'Usuario o contraseña incorrectos.';
+      });
     } catch (e) {
       setState(() {
-        errorMessage = 'Error al iniciar sesión: $e';
+        errorMessage = 'Usuario o contraseña incorrectos.';
       });
     }
   }
@@ -91,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
           'Iniciar Sesión',
           style: TextStyle(color: Colors.white),
         ),
-        automaticallyImplyLeading: widget.showBackButton, // Controla si se muestra la flecha
+        automaticallyImplyLeading: widget.showBackButton,
       ),
       body: Container(
         color: Colors.white,
@@ -155,7 +164,13 @@ class _LoginPageState extends State<LoginPage> {
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: 8), // Reducido el espacio a 8
+                        if (errorMessage.isNotEmpty)
+                          Text(
+                            errorMessage,
+                            style: TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
                         TextButton(
                           onPressed: () {
                             Navigator.pushNamed(context, '/register');
@@ -166,11 +181,6 @@ class _LoginPageState extends State<LoginPage> {
                               color: const Color.fromARGB(255, 0, 93, 139),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          errorMessage,
-                          style: TextStyle(color: Colors.red),
                         ),
                       ],
                     ),

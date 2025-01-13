@@ -9,38 +9,75 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajustes'),
+        backgroundColor: themeProvider.currentTheme.primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Ajustes',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Selecciona un tema:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: themeProvider.currentTheme.primaryColor,
+              ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ListTile(
               leading: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 0, 93, 139)),
-              title: Text('Azul'),
+                backgroundColor: const Color.fromARGB(255, 0, 93, 139),
+                radius: 20,
+              ),
+              title: const Text(
+                'Azul',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
               onTap: () => themeProvider.changeTheme('Azul'),
             ),
-            ListTile(
-              leading: CircleAvatar(backgroundColor: Colors.deepPurple),
-              title: Text('Morado'),
-              onTap: () => themeProvider.changeTheme('Morado'),
-            ),
+            const SizedBox(height: 8),
             ListTile(
               leading: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 128, 0, 64)),
-              title: Text('Guinda'),
+                backgroundColor: Colors.deepPurple,
+                radius: 20,
+              ),
+              title: const Text(
+                'Morado',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              onTap: () => themeProvider.changeTheme('Morado'),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: const Color.fromARGB(255, 128, 0, 64),
+                radius: 20,
+              ),
+              title: const Text(
+                'Guinda',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
               onTap: () => themeProvider.changeTheme('Guinda'),
             ),
+            const SizedBox(height: 8),
             ListTile(
-              leading: CircleAvatar(backgroundColor: Colors.orange),
-              title: Text('Naranja'),
+              leading: CircleAvatar(
+                backgroundColor: Colors.orange,
+                radius: 20,
+              ),
+              title: const Text(
+                'Naranja',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
               onTap: () => themeProvider.changeTheme('Naranja'),
             ),
           ],

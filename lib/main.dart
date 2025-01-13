@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:proyecto_final_fbdp_crr/baseDatos/insertar_datos.dart';
 import 'package:proyecto_final_fbdp_crr/firebase_options.dart';
 import 'package:proyecto_final_fbdp_crr/screens/account_page.dart';
 import 'package:proyecto_final_fbdp_crr/screens/careeer_page.dart';
@@ -19,7 +20,7 @@ import 'package:proyecto_final_fbdp_crr/theme/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
@@ -40,6 +41,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    //insertDatos();
     _loadUserData();
   }
 
@@ -63,6 +65,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void logout(BuildContext context) async {
+
     await FirebaseAuth.instance.signOut();
     setState(() {
       currentUser = null;
@@ -135,7 +138,7 @@ class _MyAppState extends State<MyApp> {
         '/directory': (context) => DirectoryPage(),
         '/map': (context) => MapPage(),
         '/career': (context) => CareerPage(),
-        '/teacherDetails': (context) {
+        '/direcDetails': (context) {
           final directivo = ModalRoute.of(context)?.settings.arguments
               as Map<String, dynamic>?;
           if (directivo == null) {
